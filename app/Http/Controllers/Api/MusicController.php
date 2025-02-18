@@ -12,25 +12,31 @@ class MusicController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'title' => 'required|string',
+            'title'  => 'required|string',
             'artist' => 'required|string',
-            'audio' => 'required|file|mimes:mp3,wav',
+            'audio'  => 'required|file|mimes:mp3,wav',
         ]);
 
-        $audioPath = $request->file('audio')->store('public/music');
+        // Almacena el archivo en el disco "private_public" dentro de la carpeta "music"
+        // Asegúrate de usar "music" y no "public/music"
+        $audioPath = $request->file('audio')->store('music', 'private_public');
 
         $music = Music::create([
-            'title' => $request->title,
-            'artist' => $request->artist,
-            'audio_path' => $audioPath,
-            'user_id' => $request->user()->id,
+            'title'      => $request->title,
+            'artist'     => $request->artist,
+            'audio_path' => $audioPath, // Debería ser "music/filename.mp3"
+            'user_id'    => $request->user()->id,
         ]);
 
-        return response()->json(['message' => 'Music uploaded successfully', 'music' => $music], 201);
+        return response()->json([
+            'message' => 'Music uploaded successfully',
+            'music'   => $music
+        ], 201);
     }
 
     public function index(Request $request)
     {
+        // Obtener las canciones del usuario
         $music = Music::where('user_id', $request->user()->id)->get();
 
         return response()->json(['music' => $music], 200);
